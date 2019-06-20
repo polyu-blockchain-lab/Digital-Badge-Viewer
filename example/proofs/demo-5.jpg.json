@@ -1,0 +1,13 @@
+{
+  "image": "demo-5.jpg",
+  "hash": "4991e799aedddf8b7830ba136896c937ca35c81a68b41c8a0feed5d4f0115fe8",
+  "index": 4,
+  "tx": "ee943b21e98aa8f49e5b288952f657496655c5fcb0169bd43188e1a8312887ad",
+  "proofs": [
+    {
+      "position": "left",
+      "data": "0x737540ee9230c2421c7eedd4dd26b7b59bb9c64064906e423a35add9995d463b"
+    }
+  ],
+  "signature": "a3c36878212f57c283f2553a8cf6920866050c6b895712595a29c4974e2f96376064fb219c6d6c659f63a2f9a3eecd767cdda0bb564d40abe53af3346c236da5"
+}
