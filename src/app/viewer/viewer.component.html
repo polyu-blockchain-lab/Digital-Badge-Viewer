@@ -57,7 +57,7 @@
 
   <div padding>
     <h1>XXX Certification</h1>
-    <h5>Here is the Certification Subtitle</h5>
+    <h5 *ngIf="cert">Issued by <a href="mailto:{{ cert.subject?.getField({ shortName: 'E' })?.value }}">{{ cert.subject?.getField({ shortName: 'O' })?.value }}</a></h5>
     <p mat-line></p>
     <ion-text>
       Not him old music think his found enjoy merry. Listening acuteness dependent at or an. Apartments thoroughly unsatiable terminated sex how themselves. She are ten hours wrong walls stand early. Domestic perceive on an ladyship extended received do. Why jennings our whatever his learning gay perceive. Is against no he without subject. Bed connection unreserved preference partiality not unaffected. Years merit trees so think in hoped we as.
