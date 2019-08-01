@@ -1,9 +1,11 @@
 import { Component } from '@angular/core';
 import { Network, Proof, ProofService, UtilService, ExplorerService } from '../services';
 import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import { Buffer } from 'buffer';
+import * as forge from 'node-forge';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { ToastController } from '@ionic/angular';
+import { HttpClient } from '@angular/common/http';
+import { environment } from '../../environments/environment';
 
 interface State {
   name: string;
@@ -25,7 +27,7 @@ export class ViewerComponent {
   /**
    * The bi-directional binding for Bitcoin Network Selection
    */
-  public network: Network = "BTCTEST";
+  public network: Network = (environment.btcNetwork as any) || 'BTCTEST';
 
   /**
    * The Verify Form Group
@@ -50,6 +52,11 @@ export class ViewerComponent {
 
   public state: Verification;
 
+  private keyPath: string = 'assets/cert.pem';
+  private fullCertChainPath: string = 'assets/cert-chain.pem';
+  public cert: forge.pki.Certificate;
+  public key: forge.pki.rsa.PublicKey;
+
   /**
    * Inject required providers.
    * @param proofs The Timestamping Proofing Service Provider
@@ -59,7 +66,7 @@ export class ViewerComponent {
   constructor(
     public proofs: ProofService, public forms: FormBuilder,
     public modals: NgbModal, public toast: ToastController,
-    public explorer: ExplorerService,
+    public explorer: ExplorerService, public http: HttpClient,
   ) {
     this.reset();
     this.verifyForm = this.forms.group({
@@ -73,6 +80,18 @@ export class ViewerComponent {
         [Validators.required]
       ]
     });
+
+    // Get Certification from assets
+    this.http.get(this.keyPath, { responseType: 'text' })
+      .subscribe(async raw => {
+        try {
+          this.cert = forge.pki.certificateFromPem(raw);
+          this.key = this.cert.publicKey as forge.pki.rsa.PublicKey;
+        } catch (e) {
+          console.error(e);
+          UtilService.toasting(this.toast, 'Fail to retrieve X.509 Key File\n' + e.message ? e.message : 'Unknown Error');
+        }
+      });
   }
 
   /**
@@ -101,15 +120,19 @@ export class ViewerComponent {
       await this.sleep(1000);
       this.change(2, this.network === "BTC" ? "Bitcoin Mainnet" : "Bitcoin Testnet");
 
-      // TODO: Check Signature here
-      await this.sleep(1000);
-      this.change(3, "PolyU");
-
-      const result = await this.proofs.verify(tx, this.proof, this.image);
+      const result = await this.proofs.verify(tx, this.proof, this.image, this.key);
       await this.sleep(1500);
-      // const result = await this.proofs.proofing(this.image, this.proof, this.network);
+
       if (result) {
+        // Get Signature Signer Organization
+        const organisation = this.cert.subject.getField({ shortName: 'E' });
+        if (!organisation) throw new Error("Organization Not Found")
+        if (!organisation.value) throw new Error("Organization Value is Empty");
+        this.change(3, organisation.value);
+        await this.sleep(1000);
         this.change(4, '✅');
+        await this.sleep(500);
+        this.change(5, '✅');
       } else {
         throw new Error('Invalid Root Hash');
       }
@@ -127,7 +150,7 @@ export class ViewerComponent {
    * @param key The File Input Key
    * @param e The File Input Event
    */
-  public async onFileChange(key: 'image' | 'proof', e) {
+  public async onFileChange(key: 'image' | 'proof' | 'cert', e) {
     const file: File = e.target.files[0];
     switch (key) {
       case 'image':
@@ -141,6 +164,20 @@ export class ViewerComponent {
         const text = await UtilService.readFile(file, true) as string;
         this.proof = JSON.parse(text);
         break;
+      // Reserve a place for upload cert & verify instead of hard-code cert on site
+      /*
+      case 'cert':
+        if (!file) return delete this.proof;
+        try {
+          const raw = await UtilService.readFile(file, true) as string;
+          this.cert = forge.pki.certificateFromPem(raw);
+          this.key = this.cert.publicKey as forge.pki.rsa.PublicKey;
+          return;
+        } catch (e) {
+          console.error(e);
+          return UtilService.toasting(this.toast, 'Fail to retrieve X.509 Key File\n' + e.message ? e.message : 'Unknown Error');
+        }
+      */
       default: break;
     }
   }
@@ -180,11 +217,21 @@ export class ViewerComponent {
           value: undefined,
         },
         {
+          name: "Valid Merkle Proof",
+          value: undefined
+        },
+        {
           name: "VERIFIED",
           value: undefined,
         }
       ],
     }
+  }
+
+  public download() {
+    const el = document.createElement('a');
+    el.href = this.fullCertChainPath;
+    el.click();
   }
 
   /**

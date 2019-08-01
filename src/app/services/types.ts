@@ -13,6 +13,11 @@ export interface FileHash {
   hash: string;
 
   /**
+   * The Image File Signature based on the hash
+   */
+  signature: string;
+
+  /**
    * The Leave Index in the Merkle Tree
    */
   index: number;
