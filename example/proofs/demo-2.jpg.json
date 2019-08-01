@@ -1,0 +1,21 @@
+{
+  "image": "demo-2.jpg",
+  "hash": "80f2e7b732e658c08e89f7666d8b12402905e38cdfc4bddc726d4863463ea334",
+  "index": 1,
+  "tx": "ee943b21e98aa8f49e5b288952f657496655c5fcb0169bd43188e1a8312887ad",
+  "proofs": [
+    {
+      "position": "left",
+      "data": "0x4afc1c1248d8c35bcfd1c733517d96457e1f47747758d247eab3ee7d78d14d05"
+    },
+    {
+      "position": "right",
+      "data": "0x35c003f2e028a9abf48438a68fc068af5112814324fa5614cba95d9964fa1dae"
+    },
+    {
+      "position": "right",
+      "data": "0x4991e799aedddf8b7830ba136896c937ca35c81a68b41c8a0feed5d4f0115fe8"
+    }
+  ],
+  "signature": "a3c36878212f57c283f2553a8cf6920866050c6b895712595a29c4974e2f96376064fb219c6d6c659f63a2f9a3eecd767cdda0bb564d40abe53af3346c236da5"
+}

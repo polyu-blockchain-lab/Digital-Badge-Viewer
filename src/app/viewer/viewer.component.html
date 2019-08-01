@@ -1,0 +1,107 @@
+<mat-toolbar color="primary">
+  <mat-toolbar-row>
+    <span>Digital Badge</span>
+  </mat-toolbar-row>
+</mat-toolbar>
+
+<ion-content no-padding>
+  <ion-card padding>
+    <ion-card-title text-center><h1>Badge Verification</h1></ion-card-title>
+    <form [formGroup]="verifyForm">
+      <mat-list>
+        <mat-list-item>
+          <h2>Your Badge Image</h2>
+        </mat-list-item>
+        <p mat-line></p>
+        <mat-list-item>
+          <mat-form-field class="full-width">
+          <ngx-mat-file-input
+            formControlName="image"
+            placeholder="Badge Image"
+            [accept]="'image/*'"
+            (change)="onFileChange('image', $event)"
+          ></ngx-mat-file-input>
+            <mat-icon color="primary" matSuffix>camera</mat-icon>
+          </mat-form-field>
+        </mat-list-item>
+        <p mat-line></p>
+
+        <mat-list-item>
+          <h2>Your Badge Proof File</h2>
+        </mat-list-item>
+        <p mat-line></p>
+        <mat-list-item>
+          <mat-form-field class="full-width">
+          <ngx-mat-file-input
+            formControlName="file"
+            placeholder="Badge Proof"
+            [accept]="'.json'"
+            (change)="onFileChange('proof', $event)"
+          ></ngx-mat-file-input>
+            <mat-icon color="primary" matSuffix>insert_drive_file</mat-icon>
+          </mat-form-field>
+        </mat-list-item>
+        <p mat-line></p>
+
+        <mat-list-item text-center class="right">
+        <button mat-flat-button color="primary" (click)="toProof(content)" class="verify-btn" type="submit">Verify Digital Badge</button>
+        </mat-list-item>
+        <p mat-line></p>
+        <mat-list-item text-center class="right">
+        <button mat-stroked-button color="primary" class="verify-btn" (click)="download()">Download Signer Certification</button>
+        </mat-list-item>
+
+      </mat-list>
+    </form>
+  </ion-card>
+
+  <div padding>
+    <h1>Certification</h1>
+    <h5 *ngIf="cert">Issued by <a
+        href="mailto:{{ cert.subject?.getField({ shortName: 'E' })?.value }}">{{ cert.subject?.getField({ shortName: 'E' })?.value }}</a>
+    </h5>
+    <p mat-line></p>
+    <ion-text>
+
+    </ion-text>
+  </div>
+
+  <p mat-line></p>
+
+  <ion-card *ngIf="source" padding>
+    <ion-card-title text-center><h1>Digital Badge</h1></ion-card-title>
+    <ion-img [src]="source"></ion-img>
+  </ion-card>
+
+  <ion-footer padding text-right>
+    <ion-text>
+      Made with <ion-icon name="heart" color="primary"></ion-icon> from Hong Kong Polytechnic University
+    </ion-text>
+  </ion-footer>
+  <p mat-line></p>
+  <p mat-line></p>
+</ion-content>
+
+<!-- The Verification Modal -->
+<ng-template #content let-modal>
+  <div class="modal-header">
+    <h1 class="modal-title">Verification</h1>
+    <button type="button" class="close" (click)="modal.dismiss('Cross click')">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <p><ngb-progressbar type="info" [value]="(state.index / (state.states.length - 1)) * 100"></ngb-progressbar></p>
+    <ion-list padding>
+      <ion-item *ngFor="let step of state.states">
+        <ion-spinner color="primary" *ngIf="!step.value && step.value !== false" name="dots"></ion-spinner>
+        <ion-icon *ngIf="step.value" color="success" name="checkmark"></ion-icon>
+        <ion-icon *ngIf="step.value === false" color="danger" name="close"></ion-icon>
+        <ion-text class="ion-text-right" slot="end">{{ step.name }} {{ step.value ? step.value : "..." }}</ion-text>
+      </ion-item>
+    </ion-list>
+  </div>
+  <div class="modal-footer">
+    <button mat-flat-button color="primary" ngbAutofocus (click)="modal.close('Close click')" class="verify-btn" type="submit">OK</button>
+  </div>
+</ng-template>
