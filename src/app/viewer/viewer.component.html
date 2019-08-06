@@ -75,7 +75,7 @@
 
   <ion-footer padding text-right>
     <ion-text>
-      Made with <ion-icon name="heart" color="primary"></ion-icon> from Hong Kong Polytechnic University
+      Copyright &copy; The Hong Kong Polytechnic University. All Rights Reserved.
     </ion-text>
   </ion-footer>
   <p mat-line></p>
@@ -97,7 +97,14 @@
         <ion-spinner color="primary" *ngIf="!step.value && step.value !== false" name="dots"></ion-spinner>
         <ion-icon *ngIf="step.value" color="success" name="checkmark"></ion-icon>
         <ion-icon *ngIf="step.value === false" color="danger" name="close"></ion-icon>
-        <ion-text class="ion-text-right" slot="end">{{ step.name }} {{ step.value ? step.value : "..." }}</ion-text>
+        <ion-text class="ion-text-right" slot="end">
+          {{ step.name }}
+          <span *ngIf="!step.value || !step.txUrl; then stepValue else step4btcTx"></span>
+          <ng-template #stepValue>{{ step.value ? step.value : "..." }}</ng-template>
+          <ng-template #step4btcTx>
+            <a [href]="step.txUrl" target="_blank">{{ step.value }}</a>
+          </ng-template>
+        </ion-text>
       </ion-item>
     </ion-list>
   </div>

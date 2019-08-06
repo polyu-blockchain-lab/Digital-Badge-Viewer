@@ -10,6 +10,7 @@ import { environment } from '../../environments/environment';
 interface State {
   name: string;
   value: any;
+  txUrl?: string;
 };
 
 interface Verification {
@@ -109,16 +110,22 @@ export class ViewerComponent {
       if (!this.image) {
         throw new Error('Please Upload Your Badge Image');
       }
-      this.change(0, '👍');
+      this.change(0, '✅');
       if (!this.proof) {
         throw new Error('Please Upload Your Badge Proof File');
       }
-      this.change(1, '😄');
+      this.change(1, '✅');
 
       // Get Transaction
       const tx = await this.explorer.tx(this.proof.tx, this.network);
       await this.sleep(1000);
-      this.change(2, this.network === "BTC" ? "Bitcoin Mainnet" : "Bitcoin Testnet");
+
+      const txMsg = this.network === 'BTC' ? 'Bitcoin Mainnet' : 'Bitcoin Testnet';
+      let txUrl = 'https://live.blockcypher.com/';
+      txUrl += this.network === 'BTC' ? 'btc/' : 'btc-testnet/';
+      txUrl += 'tx/' + this.proof.tx;
+      this.state.states[2].txUrl = txUrl;
+      this.change(2, txMsg);
 
       const result = await this.proofs.verify(tx, this.proof, this.image, this.key);
       await this.sleep(1500);
