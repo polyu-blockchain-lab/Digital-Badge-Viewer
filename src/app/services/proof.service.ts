@@ -18,13 +18,13 @@ export class ProofService {
    */
   constructor(
     private explorer: ExplorerService,
-  ) {}
+  ) { }
 
   public async verify(tx: TXResponse, proof: Proof, image: Buffer, pubkey: forge.pki.rsa.PublicKey) {
     // Get The Image Hash
     const md = forge.md.sha256.create();
-    const str = forge.util.binary.raw.encode(image);
-    md.update(str, 'raw');
+    const str = forge.util.binary.hex.encode(image);
+    md.update(forge.util.hexToBytes(str), 'raw');
     const hash = md.digest().toHex();
     console.log(hash);
 
