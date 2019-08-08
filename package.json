@@ -1,6 +1,6 @@
 {
   "name": "digital-badge-viewer",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Digital Badge with Bitcoin Timestamping",
   "scripts": {
     "ng": "ng",
