@@ -3,6 +3,7 @@
   "version": "1.0.1",
   "description": "Digital Badge with Bitcoin Timestamping",
   "scripts": {
+    "postinstall": "node patch.js",
     "ng": "ng",
     "start": "ng serve --port=8080",
     "build": "ng build --prod --base-href /~ogciobadge/ --deploy-url /~ogciobadge/",
