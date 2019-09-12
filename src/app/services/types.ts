@@ -2,6 +2,8 @@
  * Image File Hash
  */
 export interface FileHash {
+  path?: string;
+
   /**
    * The Image File Name
    */
@@ -54,6 +56,11 @@ export const conversion = 100000000;
 export type Network = 'BTC' | 'BTCTEST';
 
 /**
+ * Fee Speed Defined from Fee Reference
+ */
+export type Speed = 'fastest' | 'halfHour' | 'hour';
+
+/**
  * The Transaction Fee Reference Interface.
  */
 export interface FeeReference {
@@ -74,6 +81,26 @@ export interface FeeReference {
 };
 
 /**
+ * The Transaction Estimation Interface.
+ */
+export interface FeeEstimation {
+  /**
+   * The Transaction Output
+   */
+  output: number;
+
+  /**
+   * The Transaction Fee per Byte
+   */
+  fee: number;
+
+  /**
+   * The Total Transaction Fee
+   */
+  total: number;
+};
+
+/**
  * The UTXO Interface
  */
 export interface UTXO {
@@ -88,16 +115,6 @@ export interface UTXO {
   output_no: number;
 
   /**
-   * Assembly Script of the TX
-   */
-  script_asm: string;
-
-  /**
-   * Hex Script of the TX
-   */
-  script_hex: string;
-
-  /**
    * Total Value of UTXO
    */
   value: string;
@@ -106,11 +123,6 @@ export interface UTXO {
    * Block confirmations on the UTXO
    */
   confirmations: number;
-
-  /**
-   * The Submission Time of UTXO
-   */
-  time: number;
 };
 
 /**
@@ -185,7 +197,7 @@ export interface TXOutput {
   /**
    * The recepient Address
    */
-  address: string;
+  addresses: string[];
 
   /**
    * TX Type
