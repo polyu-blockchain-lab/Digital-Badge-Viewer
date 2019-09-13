@@ -70,7 +70,6 @@
     "@ionic/angular": "4.6.1",
     "@ng-bootstrap/ng-bootstrap": "^4.2.1",
     "big.js": "^5.2.2",
-    "bitcoinjs-lib": "^5.0.5",
     "buffer": "^5.2.1",
     "buffer-reverse": "^1.0.1",
     "crypto-js": "^3.1.9-1",
