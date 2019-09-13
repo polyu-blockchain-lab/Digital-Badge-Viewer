@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import * as bitcoin from 'bitcoinjs-lib';
+import { BitcoinScript } from './bitcoin-script.service';
 import { HttpClient } from '@angular/common/http';
 import {
   UTXOResponse,
@@ -183,7 +183,8 @@ export class ExplorerService {
     const output = outputs.find(x => x.type === 'null-data');
     if (!output) throw new Error('No OP_RETURN Output found');
     // Blockcypher Modification : Hex script to Assembly Script
-    const script = bitcoin.script.toASM(Buffer.from(output.script, 'hex'));
+    const script = BitcoinScript.Script.toAsm(Buffer.from(output.script, 'hex'));
+    console.log(script);
     const data = script.split('OP_RETURN ');
     if (data.length <= 1) throw new Error('Invalid TX Script from Null Data Output');
     return data[1];
