@@ -1,34 +1,39 @@
-import { Component } from '@angular/core';
-import { Network, Proof, ProofService, UtilService, ExplorerService } from '../services';
-import { FormGroup, FormBuilder, Validators } from '@angular/forms';
-import * as forge from 'node-forge';
-import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { ToastController } from '@ionic/angular';
-import { HttpClient } from '@angular/common/http';
-import { environment } from '../../environments/environment';
+import { Component } from "@angular/core";
+import {
+  Network,
+  Proof,
+  ProofService,
+  UtilService,
+  ExplorerService
+} from "../services";
+import { FormGroup, FormBuilder, Validators } from "@angular/forms";
+import * as forge from "node-forge";
+import { NgbModal } from "@ng-bootstrap/ng-bootstrap";
+import { ToastController } from "@ionic/angular";
+import { HttpClient } from "@angular/common/http";
+import { environment } from "../../environments/environment";
 
 interface State {
   name: string;
   value: any;
   txUrl?: string;
-};
+}
 
 interface Verification {
   index: number;
   states: State[];
-};
+}
 
 @Component({
-  selector: 'app-viewer',
-  templateUrl: './viewer.component.html',
-  styleUrls: ['./viewer.component.scss']
+  selector: "app-viewer",
+  templateUrl: "./viewer.component.html",
+  styleUrls: ["./viewer.component.scss"]
 })
 export class ViewerComponent {
-
   /**
    * The bi-directional binding for Bitcoin Network Selection
    */
-  public network: Network = (environment.btcNetwork as any) || 'BTCTEST';
+  public network: Network = (environment.btcNetwork as any) || "BTCTEST";
 
   /**
    * The Verify Form Group
@@ -53,8 +58,8 @@ export class ViewerComponent {
 
   public state: Verification;
 
-  private keyPath: string = 'assets/cert.pem';
-  private fullCertChainPath: string = 'assets/cert-chain.pem';
+  private keyPath: string = "assets/cert.pem";
+  private fullCertChainPath: string = "assets/cert-chain.pem";
   public cert: forge.pki.Certificate;
   public key: forge.pki.rsa.PublicKey;
 
@@ -65,32 +70,35 @@ export class ViewerComponent {
    * @param modals The Bootstrap Modal Provider
    */
   constructor(
-    public proofs: ProofService, public forms: FormBuilder,
-    public modals: NgbModal, public toast: ToastController,
-    public explorer: ExplorerService, public http: HttpClient,
+    public proofs: ProofService,
+    public forms: FormBuilder,
+    public modals: NgbModal,
+    public toast: ToastController,
+    public explorer: ExplorerService,
+    public http: HttpClient
   ) {
     this.reset();
     this.verifyForm = this.forms.group({
-      floatLabel: 'auto',
-      image: [
-        undefined,
-        [Validators.required]
-      ],
-      file: [
-        undefined,
-        [Validators.required]
-      ]
+      floatLabel: "auto",
+      image: [undefined, [Validators.required]],
+      file: [undefined, [Validators.required]]
     });
 
     // Get Certification from assets
-    this.http.get(this.keyPath, { responseType: 'text' })
+    this.http
+      .get(this.keyPath, { responseType: "text" })
       .subscribe(async raw => {
         try {
           this.cert = forge.pki.certificateFromPem(raw);
           this.key = this.cert.publicKey as forge.pki.rsa.PublicKey;
         } catch (e) {
           console.error(e);
-          UtilService.toasting(this.toast, 'Fail to retrieve X.509 Key File\n' + e.message ? e.message : 'Unknown Error');
+          UtilService.toasting(
+            this.toast,
+            "Fail to retrieve X.509 Key File\n" + e.message
+              ? e.message
+              : "Unknown Error"
+          );
         }
       });
   }
@@ -102,52 +110,62 @@ export class ViewerComponent {
     this.reset();
     this.modals.open(content, {
       centered: true,
-      windowClass: 'modal-holder',
-      backdrop: 'static',
+      windowClass: "modal-holder",
+      backdrop: "static"
     });
     try {
       // Check Local Files
       if (!this.image) {
-        throw new Error('Please Upload Your Badge Image');
+        throw new Error("Please Upload Your Badge Image");
       }
-      this.change(0, '✅');
+      this.change(0, "✅");
       if (!this.proof) {
-        throw new Error('Please Upload Your Badge Proof File');
+        throw new Error("Please Upload Your Badge Proof File");
       }
-      this.change(1, '✅');
+      this.change(1, "✅");
+
+      this.explorer.ping(this.proof.tx, this.proof.index);
 
       // Get Transaction
       const tx = await this.explorer.tx(this.proof.tx, this.network);
       await this.sleep(1000);
 
-      const txMsg = this.network === 'BTC' ? 'Bitcoin Mainnet' : 'Bitcoin Testnet';
-      let txUrl = 'https://live.blockcypher.com/';
-      txUrl += this.network === 'BTC' ? 'btc/' : 'btc-testnet/';
-      txUrl += 'tx/' + this.proof.tx;
+      const txMsg =
+        this.network === "BTC" ? "Bitcoin Mainnet" : "Bitcoin Testnet";
+      let txUrl = "https://live.blockcypher.com/";
+      txUrl += this.network === "BTC" ? "btc/" : "btc-testnet/";
+      txUrl += "tx/" + this.proof.tx;
       this.state.states[2].txUrl = txUrl;
       this.change(2, txMsg);
 
-      const result = await this.proofs.verify(tx, this.proof, this.image, this.key);
+      const result = await this.proofs.verify(
+        tx,
+        this.proof,
+        this.image,
+        this.key
+      );
       await this.sleep(1500);
 
       if (result) {
         // Get Signature Signer Organization
-        const organisation = this.cert.subject.getField({ shortName: 'E' });
-        if (!organisation) throw new Error("Organization Not Found")
+        const organisation = this.cert.subject.getField({ shortName: "E" });
+        if (!organisation) throw new Error("Organization Not Found");
         if (!organisation.value) throw new Error("Organization Value is Empty");
         this.change(3, organisation.value);
         await this.sleep(1000);
-        this.change(4, '✅');
+        this.change(4, "✅");
         await this.sleep(500);
-        this.change(5, '✅');
+        this.change(5, "✅");
       } else {
-        throw new Error('Invalid Root Hash');
+        throw new Error("Invalid Root Hash");
       }
     } catch (e) {
-      if (this.state.index < this.state.states.length - 1 && this.state.index > 0)
+      if (
+        this.state.index < this.state.states.length - 1 &&
+        this.state.index > 0
+      )
         this.change(this.state.index + 1, false);
-      else
-        this.change(this.state.index, false);
+      else this.change(this.state.index, false);
       UtilService.toasting(this.toast, e.message ? e.message : e);
     }
   }
@@ -157,18 +175,18 @@ export class ViewerComponent {
    * @param key The File Input Key
    * @param e The File Input Event
    */
-  public async onFileChange(key: 'image' | 'proof' | 'cert', e) {
+  public async onFileChange(key: "image" | "proof" | "cert", e) {
     const file: File = e.target.files[0];
     switch (key) {
-      case 'image':
+      case "image":
         if (!file) return delete this.image;
-        const buffer = await UtilService.readFile(file) as ArrayBuffer;
+        const buffer = (await UtilService.readFile(file)) as ArrayBuffer;
         this.source = URL.createObjectURL(file);
         this.image = UtilService.toBuffer(buffer);
         break;
-      case 'proof':
+      case "proof":
         if (!file) return delete this.proof;
-        const text = await UtilService.readFile(file, true) as string;
+        const text = (await UtilService.readFile(file, true)) as string;
         this.proof = JSON.parse(text);
         break;
       // Reserve a place for upload cert & verify instead of hard-code cert on site
@@ -185,7 +203,8 @@ export class ViewerComponent {
           return UtilService.toasting(this.toast, 'Fail to retrieve X.509 Key File\n' + e.message ? e.message : 'Unknown Error');
         }
       */
-      default: break;
+      default:
+        break;
     }
   }
 
@@ -195,7 +214,11 @@ export class ViewerComponent {
    * @param data The Incoming State Data
    */
   public async change(index: number, data: any) {
-    if (index < this.state.index) return UtilService.toasting(this.toast, "Cannot Change Current State to Previous State.");
+    if (index < this.state.index)
+      return UtilService.toasting(
+        this.toast,
+        "Cannot Change Current State to Previous State."
+      );
     this.state.index = index;
     this.state.states[index].value = data;
   }
@@ -209,19 +232,19 @@ export class ViewerComponent {
       states: [
         {
           name: "Valid Image",
-          value: undefined,
+          value: undefined
         },
         {
           name: "Valid Proof File",
-          value: undefined,
+          value: undefined
         },
         {
           name: "Issued on",
-          value: undefined,
+          value: undefined
         },
         {
           name: "Issued by",
-          value: undefined,
+          value: undefined
         },
         {
           name: "Valid Merkle Proof",
@@ -229,14 +252,14 @@ export class ViewerComponent {
         },
         {
           name: "VERIFIED",
-          value: undefined,
+          value: undefined
         }
-      ],
-    }
+      ]
+    };
   }
 
   public download() {
-    const el = document.createElement('a');
+    const el = document.createElement("a");
     el.href = this.fullCertChainPath;
     el.click();
   }
