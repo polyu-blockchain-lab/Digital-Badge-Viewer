@@ -76,7 +76,7 @@
     "ionicons": "4.6.1",
     "material-design-icons": "^3.0.1",
     "ngx-material-file-input": "^1.1.1",
-    "node-forge": "^0.8.5",
+    "node-forge": "^0.10.0",
     "treeify": "^1.1.0"
   }
 }
